@@ -179,7 +179,7 @@ type ClassificationCategory = "clean" | "argo" | "kufur" | "kavga" | "cinsel";
 interface RawWebSocket {
   onopen: (() => void) | null;
   onmessage: ((event: { data: unknown }) => void) | null;
-  onclose: (() => void) | null;
+  onclose: ((event: { code: number; reason: string; wasClean: boolean }) => void) | null;
   onerror: ((error: unknown) => void) | null;
   send(data: string): void;
   close(): void;
@@ -5569,9 +5569,27 @@ function connectGateway(token: string): void {
   let applicationId = "";
   socket.onopen = () => logger.info("FrArda Discord Gateway bağlantısı açıldı");
   socket.onerror = (error) => logger.error({ err: error }, "Discord Gateway hatası");
-  socket.onclose = () => {
+  socket.onclose = (event) => {
     if (heartbeat) clearInterval(heartbeat);
-    logger.warn("Discord Gateway bağlantısı kapandı; yeniden bağlanılıyor");
+    const code = Number(event?.code ?? 0);
+    const reason = String(event?.reason ?? "");
+    const wasClean = Boolean(event?.wasClean);
+
+    logger.warn(
+      { code, reason, wasClean },
+      "Discord Gateway bağlantısı kapandı",
+    );
+
+    if ([4004, 4010, 4011, 4012, 4013, 4014].includes(code)) {
+      if (discordGatewaySocket === socket) discordGatewaySocket = null;
+      logger.error(
+        { code, reason },
+        "Discord Gateway kalıcı bir hatayla kapandı; DISCORD_BOT_TOKEN ve Discord Developer Portal intent ayarlarını kontrol edin",
+      );
+      return;
+    }
+
+    logger.info({ code }, "Discord Gateway bağlantısı 5 saniye içinde yeniden deneniyor");
     setTimeout(() => connectGateway(token), 5_000);
   };
   socket.onmessage = (event) => {
