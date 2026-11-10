@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0c0b13">
+  <title>FR FAMILY • Mağaza Yönetimi</title>
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;color:#f5f2ff;background:#0c0b13;font-synthesis:none}
+    *{box-sizing:border-box}
+    body{max-width:1280px;margin:0 auto;padding:30px;background:radial-gradient(750px 390px at 82% -5%,#5a338f36,transparent),radial-gradient(500px 300px at 0 16%,#792d6930,transparent),#0c0b13;min-height:100vh}
+    header{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:4px 0 22px;border-bottom:1px solid #ffffff16}
+    h1{margin:0;font-size:25px;letter-spacing:-.04em}h2{margin:0 0 7px;font-size:17px;letter-spacing:-.025em}
+    p,small{color:#aaa4b7}header p{margin:7px 0 0;font-size:12px}
+    button{border:1px solid #ffffff17;border-radius:9px;padding:10px 14px;background:#7948d4;color:white;font:700 11px system-ui,sans-serif;cursor:pointer;transition:filter .15s,transform .15s}
+    button:hover{filter:brightness(1.14);transform:translateY(-1px)}button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .header-actions{display:flex;gap:8px;align-items:center}
+    .header-actions[hidden]{display:none}
+    .secondary{background:#211b2d;color:#ddd4ec}.danger{background:#702c3d;border-color:#a3485d}.success{background:#236744;border-color:#398a60}
+    .eyebrow{display:block;margin-bottom:7px;color:#b78afa;font-size:9px;font-weight:800;letter-spacing:.15em}
+    #error{display:none;margin:18px 0;padding:13px 15px;border:1px solid #a04a61;border-radius:10px;background:#4a1f2d;color:#ffd8de;font-size:12px;line-height:1.5}
+    #toast{position:fixed;right:20px;bottom:20px;z-index:5;max-width:min(420px,calc(100vw - 40px));padding:12px 16px;border:1px solid #6f53a2;border-radius:11px;background:#211a30;color:#f1e9ff;box-shadow:0 15px 45px #0009;font-size:12px;opacity:0;transform:translateY(8px);pointer-events:none;transition:all .2s}
+    #toast.visible{opacity:1;transform:translateY(0)}
+    main[hidden]{display:none}
+    .login-screen{display:grid;place-items:center;min-height:calc(100vh - 170px);padding:24px 0}.login-screen[hidden]{display:none}
+    .login-card{width:min(430px,100%);padding:25px;border:1px solid #ffffff18;border-radius:17px;background:linear-gradient(145deg,#1b1726,#121019);box-shadow:0 24px 70px #0008}
+    .login-card h2{font-size:21px}.login-card p{font-size:11px;line-height:1.6}.login-card form{display:grid;gap:10px;margin-top:14px}
+    .login-card form[hidden]{display:none}
+    .login-card input,.vip-link-input{width:100%;padding:11px 12px;border:1px solid #ffffff1b;border-radius:9px;outline:none;color:#f4eefb;background:#0b0a10;font:500 12px system-ui,sans-serif}
+    .login-card input:focus,.vip-link-input:focus{border-color:#9e75e4}.login-help{display:block;margin-top:11px;color:#92889f;font-size:9px;line-height:1.5}
+    .login-error{display:none;margin-top:11px;color:#ffa8b4;font-size:10px;line-height:1.5}.login-error.visible{display:block}
+    .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}
+    .stat,.surface{border:1px solid #ffffff12;border-radius:15px;background:linear-gradient(145deg,#191624,#14121c)}
+    .stat{padding:16px 18px;color:#aaa4b7;font-size:11px}.stat b{display:block;margin-top:8px;color:#f7f1ff;font-size:23px;letter-spacing:-.035em}
+    .notice{margin:0 0 17px;padding:13px 15px;border:1px solid #53b77a38;border-radius:11px;background:#173622;color:#d5f5df;font-size:12px;line-height:1.55}
+    .notice.warning{border-color:#c2934933;background:#3a2b18;color:#f4dfb7}
+    .surface{margin:16px 0;padding:18px}
+    .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:13px}
+    .section-head p{margin:0;font-size:11px;line-height:1.5}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid #ffffff15;border-radius:99px;background:#ffffff07;color:#c5b8da;font-size:9px;font-weight:700;white-space:nowrap}
+    .pill.pending{border-color:#d5a54a42;background:#d5a54a12;color:#f1cf87}
+    .pill.done{border-color:#4ec68742;background:#4ec68712;color:#8fe2af}
+    .pill.cancel{border-color:#f0708244;background:#f0708212;color:#f5aab3}
+    .table-wrap{width:100%;overflow:auto;border:1px solid #ffffff0c;border-radius:11px}
+    table{width:100%;border-collapse:collapse;background:#12111a}
+    th,td{padding:12px;text-align:left;vertical-align:top;border-bottom:1px solid #ffffff0c;font-size:11px}
+    th{color:#988da8;background:#1b1825;font-size:9px;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+    tr:last-child td{border-bottom:0}
+    td small{display:block;margin-top:4px;font-size:9px;line-height:1.5}
+    .muted{color:#777182}.mono{font-family:ui-monospace,SFMono-Regular,monospace;overflow-wrap:anywhere}
+    .actions{display:flex;gap:6px;flex-wrap:wrap;min-width:180px}.actions button{padding:7px 9px;font-size:9px}
+    .campaign{padding:12px 14px;border:1px solid #48b87844;border-radius:10px;background:#153523;color:#d7f5df;font-size:11px}
+    .campaign + .campaign{margin-top:8px}
+    .editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:14px 0;padding:14px;border:1px solid #ffffff10;border-radius:12px;background:#111018}
+    .editor label{display:grid;gap:6px;color:#aaa0b7;font-size:9px;font-weight:700}
+    .editor input,.editor textarea{width:100%;padding:10px;border:1px solid #ffffff1a;border-radius:8px;outline:none;color:#f4eefb;background:#0b0a10;font:500 11px system-ui,sans-serif}
+    .editor input:focus,.editor textarea:focus{border-color:#9e75e4}.editor textarea{min-height:65px;resize:vertical}.wide{grid-column:1/-1}
+    .editor-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.role-help{color:#958ca1;font-size:10px}
+    .stock-input{width:86px;padding:8px;border:1px solid #ffffff1a;border-radius:7px;color:#fff;background:#0c0b13}
+    .save-stock{margin-left:5px;padding:8px 9px;font-size:9px}
+    .product-table input{min-width:85px}.product-table td{vertical-align:middle}
+    .user{display:flex;align-items:center;gap:9px}.avatar{width:30px;height:30px;flex:0 0 30px;border-radius:50%;object-fit:cover;background:#6944c9}
+    .empty{text-align:center;color:#81798c;padding:24px}
+    .vip-link-row{display:grid;grid-template-columns:1fr auto auto;gap:9px;align-items:end;margin-top:12px}.vip-link-row label{display:grid;gap:6px;color:#aaa0b7;font-size:9px;font-weight:700}.vip-link-status{grid-column:1/-1;color:#958ca1;font-size:9px}
+    @media(max-width:720px){body{padding:18px}.stats{grid-template-columns:1fr}.stat{padding:13px 15px}.stat b{font-size:20px}.surface{padding:14px}.section-head{align-items:flex-start;flex-direction:column}.editor{grid-template-columns:1fr}.wide{grid-column:auto}header{align-items:flex-start;flex-direction:column}.header-actions{width:100%}.header-actions button{flex:1}.vip-link-row{grid-template-columns:1fr 1fr}.vip-link-row label{grid-column:1/-1}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <header>
+    <div><span class="eyebrow">FR FAMILY</span><h1>Mağaza yönetimi</h1><p>Siparişleri, ürünleri ve kullanıcı bakiyelerini buradan yönet.</p></div>
+    <div id="admin-actions" class="header-actions" hidden><button class="secondary" onclick="reauthenticate()">Yeniden bağlan</button><button onclick="location.href='/shop/'">Mağazaya dön</button></div>
+  </header>
+  <div id="error" role="alert"></div>
+  <section id="login-screen" class="login-screen">
+    <div class="login-card">
+      <span class="eyebrow">KORUMALI ALAN</span>
+      <h2>Yönetim paneline giriş</h2>
+      <p>Devam etmek için yönetici şifreni doğrula. Ardından mağaza yöneticisi olduğun Discord hesabı kontrol edilir.</p>
+      <button id="login-start" type="button" onclick="showLoginForm()">Giriş yap</button>
+      <form id="login-form" hidden onsubmit="submitAdminLogin(event)">
+        <label for="admin-password">Yönetici şifresi</label>
+        <input id="admin-password" type="password" autocomplete="current-password" required>
+        <button id="login-submit" type="submit">Şifreyle devam et</button>
+      </form>
+      <small class="login-help">Giriş güvenli bağlantı üzerinden yapılır. Çok sayıda hatalı deneme geçici olarak engellenir.</small>
+      <div id="login-error" class="login-error" role="alert"></div>
+    </div>
+  </section>
+  <main id="panel" hidden>
+    <section class="stats">
+      <div class="stat">Mağazaya giriş yapan kullanıcı<b id="count">0</b></div>
+      <div class="stat">Teslim bekleyen sipariş<b id="pending-count">0</b></div>
+      <div class="stat">Kampanya<b id="campaign-count">Yok</b></div>
+    </section>
+    <div id="campaign-box"></div>
+    <section class="surface">
+      <div class="section-head"><div><span class="eyebrow">FR | VİP</span><h2>Satın alma bağlantısı</h2><p>Bu bağlantı `/vip-satin-al` komutunda ve mağaza bilgilendirme kartında gösterilir. Yalnızca güvenli HTTPS bağlantısı kabul edilir.</p></div></div>
+      <div class="vip-link-row">
+        <label for="vip-purchase-url">Satın alma URL’si<input class="vip-link-input" id="vip-purchase-url" type="url" inputmode="url" placeholder="https://..."></label>
+        <button onclick="saveVipLink()">Bağlantıyı kaydet</button>
+        <button class="secondary" onclick="saveVipLink(true)">Kaldır</button>
+        <small id="vip-link-status" class="vip-link-status"></small>
+      </div>
+    </section>
+    <section class="surface">
+      <div class="section-head"><div><span class="eyebrow">SİPARİŞ OPERASYONU</span><h2>Bekleyen siparişler</h2><p>Teslimatı manuel yaptıktan sonra tamamlandı olarak işaretle. Bekleyen sipariş 30 saatte otomatik iptal edilir ve coin iade edilir.</p></div><span class="pill pending" id="pending-pill">0 bekliyor</span></div>
+      <div class="table-wrap"><table><thead><tr><th>Sipariş / ürün</th><th>Alıcı</th><th>Ücret</th><th>Durum / süre</th><th>Yönetici işlemi</th></tr></thead><tbody id="orders"></tbody></table></div>
+    </section>
+    <section class="surface">
+      <div class="section-head"><div><span class="eyebrow">KATALOG</span><h2>Ürün ve rol yönetimi</h2><p>Ürünlerin fiyatını, açıklamasını, görselini ve stok bilgisini buradan düzenle. Teslimatlar otomatik değil, yönetici tarafından manuel yapılır.</p></div></div>
+      <div class="editor">
+        <input type="hidden" id="edit-id">
+        <label>Ürün adı<input id="edit-name" placeholder="FR | VIP"></label>
+        <label>Kategori<input id="edit-category" value="Roller" placeholder="Roller"></label>
+        <label>Fiyat (Coin)<input id="edit-price" type="number" min="1" placeholder="18000"></label>
+        <label>Discord Rol ID<input id="edit-roleId" placeholder="Rol ID"></label>
+        <label>İkon adı<input id="edit-icon" value="crown-purple" placeholder="crown-purple"></label>
+        <label>Görsel URL<input id="edit-imageUrl" placeholder="https://..."></label>
+        <label class="wide">Açıklama<textarea id="edit-description" placeholder="Ürün açıklaması"></textarea></label>
+        <div class="editor-actions wide"><button onclick="saveEditor()">Ürünü kaydet</button><button class="danger" onclick="resetEditor()">Yeni ürün ekle</button><span id="editor-status" class="role-help"></span></div>
+      </div>
+      <div class="table-wrap"><table class="product-table"><thead><tr><th>Ürün</th><th>Fiyat</th><th>Rol ID</th><th>Görsel</th><th>Stok</th><th>İşlem</th></tr></thead><tbody id="products"></tbody></table></div>
+    </section>
+    <section class="surface">
+      <div class="section-head"><div><span class="eyebrow">TOPLULUK</span><h2>Mağaza kullanıcıları</h2><p>Coin bakiyesi ve son mağaza girişi.</p></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Kullanıcı</th><th>Kullanıcı adı</th><th>Discord ID</th><th>Coin</th><th>Son giriş</th></tr></thead><tbody id="users"></tbody></table></div>
+    </section>
+  </main>
+  <div id="toast" role="status"></div>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+    let adminData = { users: [], orders: [], products: [] };
+    let toastTimer;
+    const hashSession = new URLSearchParams(location.hash.replace(/^#/, "")).get("session");
+    if (hashSession) {
+      localStorage.setItem("fr_shop_session", hashSession);
+      sessionStorage.setItem("fr_shop_session", hashSession);
+      history.replaceState(null, "", location.pathname);
+    }
+    let token = localStorage.getItem("fr_shop_session") || sessionStorage.getItem("fr_shop_session");
+    const resumeAfterOAuth = sessionStorage.getItem("fr_shop_admin_oauth_pending") === "1";
+    let adminSession = sessionStorage.getItem("fr_shop_admin_session") || "";
+    if (resumeAfterOAuth) sessionStorage.removeItem("fr_shop_admin_oauth_pending");
+    else {
+      sessionStorage.removeItem("fr_shop_admin_session");
+      adminSession = "";
+    }
+
+    function showLoginForm() {
+      $("login-start").hidden = true;
+      $("login-form").hidden = false;
+      $("admin-password").focus();
+    }
+    function showLoginError(message) {
+      const box = $("login-error");
+      box.textContent = message;
+      box.classList.add("visible");
+    }
+    function requireAdminLogin(message) {
+      $("panel").hidden = true;
+      $("login-screen").hidden = false;
+      $("admin-actions").hidden = true;
+      $("login-start").hidden = false;
+      $("login-form").hidden = true;
+      if (message) showLoginError(message);
+    }
+    async function submitAdminLogin(event) {
+      event.preventDefault();
+      const submit = $("login-submit");
+      const passwordInput = $("admin-password");
+      const password = passwordInput.value;
+      submit.disabled = true;
+      $("login-error").classList.remove("visible");
+      try {
+        const response = await fetch("/api/shop/admin/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password }),
+          cache: "no-store",
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.adminSession) {
+          const message = data.error === "too_many_attempts" ? "Çok sayıda hatalı deneme oldu. Daha sonra tekrar dene."
+            : data.error === "admin_password_not_configured" ? "Yönetici şifresi sunucu Secrets ayarlarında yapılandırılmamış."
+              : data.error === "https_required" ? "Yönetim paneli için HTTPS bağlantısı gerekli."
+                : "Şifre doğrulanamadı. Tekrar kontrol et.";
+          throw new Error(message);
+        }
+        adminSession = data.adminSession;
+        sessionStorage.setItem("fr_shop_admin_session", adminSession);
+        passwordInput.value = "";
+        if (!token) {
+          sessionStorage.setItem("fr_shop_admin_oauth_pending", "1");
+          const next = encodeURIComponent("/admin.html");
+          location.replace(`/api/shop/auth/discord?next=${next}`);
+          return;
+        }
+        await loadDashboard();
+      } catch (error) {
+        showLoginError(error instanceof Error ? error.message : "Giriş yapılamadı.");
+      } finally {
+        submit.disabled = false;
+      }
+    }
+
+    function showError(message) {
+      const box = $("error");
+      box.style.display = "block";
+      box.innerHTML = `${esc(message)}<br><button class="secondary" style="margin-top:10px" onclick="reauthenticate()">Discord ile yeniden bağlan</button>`;
+    }
+    function showToast(message) {
+      const box = $("toast");
+      box.textContent = message;
+      box.classList.add("visible");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => box.classList.remove("visible"), 2800);
+    }
+    function reauthenticate() {
+      localStorage.removeItem("fr_shop_session");
+      sessionStorage.removeItem("fr_shop_session");
+      sessionStorage.setItem("fr_shop_admin_oauth_pending", "1");
+      const next = encodeURIComponent(location.pathname || "/admin.html");
+      location.replace(`/api/shop/auth/discord?next=${next}`);
+    }
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        headers: {
+          ...(options.headers || {}),
+          Authorization: `Bearer ${token}`,
+          "X-Shop-Admin-Session": adminSession,
+        },
+        cache: "no-store",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        if (data.error === "admin_password_required") {
+          adminSession = "";
+          sessionStorage.removeItem("fr_shop_admin_session");
+          requireAdminLogin("Yönetici giriş süresi doldu. Yeniden giriş yap.");
+          throw new Error("admin_password_required");
+        }
+        localStorage.removeItem("fr_shop_session");
+        sessionStorage.removeItem("fr_shop_session");
+        showError("Discord oturumunun süresi dolmuş veya imzası geçersiz. Yeniden bağlanmak için düğmeye bas.");
+        throw new Error("unauthorized");
+      }
+      if (response.status === 403) throw new Error("Bu Discord hesabında mağazayı yönetme yetkisi yok. Sunucu yöneticisi veya mağaza sahibi hesabıyla giriş yap.");
+      if (!response.ok) {
+        const message = data.error === "order_not_pending" ? "Bu sipariş artık beklemede değil; liste güncellendi." : data.message || data.error || `İstek başarısız (${response.status}).`;
+        throw new Error(message);
+      }
+      return data;
+    }
+    function dateText(value) {
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString("tr-TR");
+    }
+    function statusFor(order) {
+      if (order.status === "tamamlandi") return ["Teslim edildi", "done"];
+      if (order.status === "iptal") return [order.cancelReason === "delivery_timeout" ? "Süre doldu · iade" : "İptal · iade", "cancel"];
+      return ["Teslim bekliyor", "pending"];
+    }
+    function renderOrders() {
+      const list = Array.isArray(adminData.orders) ? adminData.orders : [];
+      const pending = list.filter((order) => order.status === "devam-ediyor");
+      $("pending-count").textContent = String(pending.length);
+      $("pending-pill").textContent = `${pending.length} bekliyor`;
+      $("orders").innerHTML = list.length ? list.map((order) => {
+        const [label, tone] = statusFor(order);
+        const deadline = new Date(new Date(order.createdAt).getTime() + 30 * 60 * 60 * 1000);
+        const receiver = order.giftRecipientId ? `<small>🎁 Hediye edilen: <b>${esc(order.giftRecipientName || "Sunucu üyesi")}</b></small>` : "";
+        const statusNote = order.status === "devam-ediyor" ? `Son teslim: ${esc(dateText(deadline))}` : `Oluşturulma: ${esc(dateText(order.createdAt))}`;
+        const buttons = order.status === "devam-ediyor"
+          ? `<div class="actions"><button class="success" onclick="actOnOrder('${esc(order.id)}','complete')">Teslim edildi</button><button class="danger" onclick="actOnOrder('${esc(order.id)}','cancel')">İptal + iade</button></div>`
+          : `<span class="muted">İşlem tamamlandı</span>`;
+        return `<tr><td><b>${esc(order.product)}</b><small class="mono">${esc(order.id)}</small></td><td><b>${esc(order.displayName || order.username || "Discord kullanıcısı")}</b>${receiver}</td><td><b>${Number(order.price).toLocaleString("tr-TR")} Coin</b></td><td><span class="pill ${tone}">${label}</span><small>${statusNote}</small></td><td>${buttons}</td></tr>`;
+      }).join("") : `<tr><td colspan="5" class="empty">Henüz sipariş yok.</td></tr>`;
+    }
+    function renderProducts() {
+      const list = Array.isArray(adminData.products) ? adminData.products : [];
+      $("products").innerHTML = list.map((product) => `<tr>
+        <td><b>${esc(product.name)}</b><small class="muted">${esc(product.category)}</small></td>
+        <td>${Number(product.price).toLocaleString("tr-TR")} Coin</td><td class="muted mono">${esc(product.roleId || "—")}</td>
+        <td class="muted">${product.imageUrl ? "Var" : "Yok"}</td>
+        <td><input class="stock-input" id="stock-${esc(product.id)}" type="number" min="0" value="${product.stock == null ? "" : Number(product.stock)}" placeholder="Sınırsız"><button class="save-stock" onclick="saveStock('${esc(product.id)}')">Kaydet</button></td>
+        <td><div class="actions"><button class="secondary" onclick="editProduct('${esc(product.id)}')">Düzenle</button><button class="danger" onclick="deleteProduct('${esc(product.id)}')">Sil</button></div></td>
+      </tr>`).join("") || `<tr><td colspan="6" class="empty">Ürün bulunamadı.</td></tr>`;
+    }
+    function renderUsers() {
+      const list = Array.isArray(adminData.users) ? adminData.users : [];
+      $("count").textContent = String(list.length);
+      $("users").innerHTML = list.map((user) => `<tr>
+        <td><div class="user">${user.avatar ? `<img class="avatar" src="${esc(user.avatar)}" alt="">` : `<span class="avatar"></span>`}<b>${esc(user.displayName)}</b></div></td>
+        <td>${esc(user.username)}</td><td class="muted mono">${esc(user.id)}</td><td><b>${Number(user.coins).toLocaleString("tr-TR")}</b></td>
+        <td class="muted">${user.lastLoginAt ? esc(dateText(user.lastLoginAt)) : "—"}</td>
+      </tr>`).join("") || `<tr><td colspan="5" class="empty">Henüz mağazaya giriş yapan kullanıcı yok.</td></tr>`;
+    }
+    function renderDashboard(data) {
+      adminData = { ...data, users: data.users || [], orders: data.orders || [], products: data.products || [] };
+      $("login-screen").hidden = true;
+      $("panel").hidden = false;
+      $("admin-actions").hidden = false;
+      $("error").style.display = "none";
+      $("vip-purchase-url").value = data.vipPurchaseUrl || "";
+      $("vip-link-status").textContent = data.vipPurchaseUrl ? "Bağlantı aktif; mağaza bilgilendirmesinde ve /vip-satin-al komutunda gösteriliyor." : "Henüz bağlantı eklenmedi.";
+      $("campaign-count").textContent = data.activeCampaign ? `%${data.activeCampaign.discount}` : "Yok";
+      const box = $("campaign-box");
+      box.innerHTML = "";
+      if (data.activeCampaign) box.innerHTML += `<div class="campaign">🟢 Aktif kampanya: <b>%${esc(data.activeCampaign.discount)} indirim</b> · Bitiş: ${esc(dateText(data.activeCampaign.expiresAt))}</div>`;
+      if (data.maintenance?.active) box.innerHTML += `<div class="campaign warning">🔧 Mağaza bakımda · Kullanıcı işlemleri kapalı</div>`;
+      renderOrders();
+      renderProducts();
+      renderUsers();
+    }
+    async function loadDashboard() {
+      if (!adminSession) {
+        requireAdminLogin();
+        return;
+      }
+      if (!token) {
+        requireAdminLogin("Şifre doğrulandı. Mağazayı yöneten Discord hesabını bağla.");
+        return;
+      }
+      try {
+        renderDashboard(await api("/api/shop/admin"));
+      } catch (error) {
+        if (error instanceof Error && ["unauthorized", "admin_password_required"].includes(error.message)) return;
+        showError(error instanceof Error ? error.message : "Yönetim paneli yüklenemedi.");
+      }
+    }
+    async function actOnOrder(orderId, action) {
+      const isComplete = action === "complete";
+      const prompt = isComplete
+        ? "Ürünü/alıcıya teslim ettiğini doğrula. Siparişi tamamlandı olarak işaretleyelim mi?"
+        : "Sipariş iptal edilecek ve ödenen coin alıcıya iade edilecek. Devam edelim mi?";
+      if (!confirm(prompt)) return;
+      try {
+        await api(`/api/shop/admin/orders/${encodeURIComponent(orderId)}/${action}`, { method: "POST" });
+        showToast(isComplete ? "Sipariş tamamlandı olarak kaydedildi." : "Sipariş iptal edildi ve coin iade edildi.");
+        await loadDashboard();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Sipariş güncellenemedi.";
+        if (message.includes("artık beklemede değil")) {
+          showToast(message);
+          await loadDashboard();
+        } else showError(message);
+      }
+    }
+    async function saveVipLink(clear = false) {
+      const input = $("vip-purchase-url");
+      const value = clear ? "" : input.value.trim();
+      if (value && !/^https:\/\/.+/i.test(value)) {
+        $("vip-link-status").textContent = "Satın alma bağlantısı https:// ile başlamalı.";
+        return;
+      }
+      try {
+        await api("/api/shop/admin/vip-link", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: value }),
+        });
+        if (clear) input.value = "";
+        $("vip-link-status").textContent = value ? "Bağlantı kaydedildi." : "Satın alma bağlantısı kaldırıldı.";
+        showToast(value ? "FR | VİP bağlantısı güncellendi." : "FR | VİP bağlantısı kaldırıldı.");
+        await loadDashboard();
+      } catch (error) {
+        $("vip-link-status").textContent = error instanceof Error ? error.message : "Bağlantı kaydedilemedi.";
+      }
+    }
+    function editProduct(id) {
+      const product = adminData.products.find((item) => item.id === id);
+      if (!product) return;
+      $("edit-id").value = product.id;
+      $("edit-name").value = product.name || "";
+      $("edit-category").value = product.category || "Roller";
+      $("edit-price").value = product.price || "";
+      $("edit-roleId").value = product.roleId || "";
+      $("edit-icon").value = product.icon || "crown-purple";
+      $("edit-imageUrl").value = product.imageUrl || "";
+      $("edit-description").value = product.description || "";
+      $("editor-status").textContent = `${product.name} düzenleniyor`;
+      window.scrollTo({ top: $("edit-name").getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" });
+    }
+    function resetEditor() {
+      $("edit-id").value = "";
+      document.querySelectorAll(".editor input:not([type=hidden]),.editor textarea").forEach((input) => {
+        if (input.id === "edit-category") input.value = "Roller";
+        else if (input.id === "edit-icon") input.value = "crown-purple";
+        else input.value = "";
+      });
+      $("editor-status").textContent = "Yeni ürün";
+    }
+    async function saveEditor() {
+      const id = $("edit-id").value;
+      const old = adminData.products.find((product) => product.id === id);
+      const body = {
+        id: id || undefined,
+        name: $("edit-name").value,
+        category: $("edit-category").value,
+        price: Number($("edit-price").value),
+        roleId: $("edit-roleId").value,
+        icon: $("edit-icon").value,
+        imageUrl: $("edit-imageUrl").value,
+        description: $("edit-description").value,
+        stock: old?.stock ?? null,
+        active: true,
+      };
+      try {
+        await api("/api/shop/admin/products", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+        showToast("Ürün kaydedildi.");
+        await loadDashboard();
+      } catch (error) {
+        $("editor-status").textContent = error instanceof Error ? error.message : "Kaydedilemedi.";
+      }
+    }
+    async function saveStock(id) {
+      const input = $(`stock-${id}`);
+      const product = adminData.products.find((item) => item.id === id);
+      if (!input || !product) return;
+      try {
+        await api("/api/shop/admin/products", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...product, stock: input.value }) });
+        input.style.borderColor = "#35d17d";
+        showToast("Stok bilgisi kaydedildi.");
+      } catch (error) {
+        input.style.borderColor = "#ff7185";
+        showError(error instanceof Error ? error.message : "Stok kaydedilemedi.");
+      }
+    }
+    async function deleteProduct(id) {
+      if (!confirm("Bu ürünü mağazadan kaldırmak istiyor musun?")) return;
+      try {
+        await api(`/api/shop/admin/products/${encodeURIComponent(id)}`, { method: "DELETE" });
+        showToast("Ürün kaldırıldı.");
+        await loadDashboard();
+      } catch (error) {
+        showError(error instanceof Error ? error.message : "Ürün silinemedi.");
+      }
+    }
+    loadDashboard();
+  </script>
+</body>
+</html>
